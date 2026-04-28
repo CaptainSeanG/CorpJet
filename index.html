@@ -1,0 +1,887 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Corporate Jet ID Trainer</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: #121a32;
+      --panel-2: #182341;
+      --text: #eef4ff;
+      --muted: #9fb0cc;
+      --accent: #38bdf8;
+      --accent-2: #22c55e;
+      --wrong: #ef4444;
+      --warn: #f59e0b;
+      --border: rgba(255,255,255,.12);
+      --shadow: 0 18px 45px rgba(0,0,0,.35);
+      --radius: 22px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(56,189,248,.22), transparent 34rem),
+        radial-gradient(circle at bottom right, rgba(34,197,94,.14), transparent 30rem),
+        linear-gradient(135deg, #070b16 0%, var(--bg) 55%, #0d1428 100%);
+    }
+
+    header {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 28px 18px 10px;
+      display: flex;
+      gap: 18px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo {
+      width: 54px;
+      height: 54px;
+      border-radius: 18px;
+      display: grid;
+      place-items: center;
+      background: linear-gradient(135deg, rgba(56,189,248,.9), rgba(34,197,94,.72));
+      box-shadow: 0 12px 30px rgba(56,189,248,.18);
+      font-size: 28px;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.55rem, 3vw, 2.65rem);
+      letter-spacing: -.04em;
+    }
+
+    .subtitle {
+      margin: 5px 0 0;
+      color: var(--muted);
+      font-size: .98rem;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    button, select {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 11px 14px;
+      color: var(--text);
+      background: rgba(255,255,255,.06);
+      font: inherit;
+      cursor: pointer;
+    }
+
+    button:hover, select:hover { background: rgba(255,255,255,.1); }
+
+    .primary {
+      border: 0;
+      color: #03111d;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--accent), #7dd3fc);
+    }
+
+    .primary:hover { filter: brightness(1.05); }
+
+    main {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 18px;
+      display: grid;
+      grid-template-columns: 1fr 350px;
+      gap: 18px;
+    }
+
+    @media (max-width: 940px) {
+      main { grid-template-columns: 1fr; }
+    }
+
+    .card {
+      background: rgba(18,26,50,.86);
+      backdrop-filter: blur(14px);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .quiz-card {
+      min-height: 690px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .status-bar {
+      padding: 16px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(255,255,255,.03);
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 7px 11px;
+      color: var(--muted);
+      background: rgba(255,255,255,.045);
+      font-size: .9rem;
+      white-space: nowrap;
+    }
+
+    .image-stage {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      background:
+        linear-gradient(180deg, rgba(125,211,252,.18), rgba(2,6,23,.24)),
+        radial-gradient(circle at 50% 18%, rgba(255,255,255,.18), transparent 22rem),
+        #101827;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .image-stage img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .image-stage .fallback {
+      width: min(86%, 720px);
+      opacity: .96;
+      filter: drop-shadow(0 24px 26px rgba(0,0,0,.35));
+    }
+
+    .image-label {
+      position: absolute;
+      left: 16px;
+      bottom: 16px;
+      padding: 8px 11px;
+      border-radius: 12px;
+      background: rgba(0,0,0,.48);
+      border: 1px solid rgba(255,255,255,.18);
+      color: rgba(255,255,255,.86);
+      font-size: .88rem;
+    }
+
+    .quiz-body {
+      padding: 20px;
+      display: grid;
+      gap: 18px;
+    }
+
+    .question {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .question h2 {
+      margin: 0;
+      font-size: clamp(1.35rem, 2.2vw, 2.1rem);
+      letter-spacing: -.03em;
+    }
+
+    .hint {
+      margin-top: 6px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .options {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    @media (max-width: 680px) {
+      .options { grid-template-columns: 1fr; }
+    }
+
+    .option {
+      text-align: left;
+      min-height: 68px;
+      border-radius: 18px;
+      padding: 14px 15px;
+      background: rgba(255,255,255,.055);
+      border: 1px solid var(--border);
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+    }
+
+    .option:hover { transform: translateY(-1px); border-color: rgba(56,189,248,.55); }
+    .option.correct { border-color: rgba(34,197,94,.85); background: rgba(34,197,94,.16); }
+    .option.wrong { border-color: rgba(239,68,68,.85); background: rgba(239,68,68,.15); }
+    .option[disabled] { cursor: not-allowed; opacity: .95; }
+
+    .feedback {
+      display: none;
+      border-radius: 18px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.055);
+      padding: 16px;
+      line-height: 1.5;
+    }
+
+    .feedback.show { display: block; }
+    .feedback.good { border-color: rgba(34,197,94,.6); }
+    .feedback.bad { border-color: rgba(239,68,68,.62); }
+
+    .feedback h3 {
+      margin: 0 0 8px;
+      font-size: 1.05rem;
+    }
+
+    .feature-list {
+      margin: 8px 0 0;
+      padding-left: 20px;
+      color: #d8e6fb;
+    }
+
+    .feature-list li { margin: 5px 0; }
+
+    .next-row {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    aside {
+      display: grid;
+      gap: 18px;
+      align-content: start;
+    }
+
+    .side-section { padding: 18px; }
+
+    .side-section h3 {
+      margin: 0 0 12px;
+      letter-spacing: -.02em;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .stat {
+      padding: 13px;
+      border-radius: 17px;
+      background: rgba(255,255,255,.055);
+      border: 1px solid var(--border);
+    }
+
+    .stat .num {
+      display: block;
+      font-size: 1.6rem;
+      font-weight: 850;
+      letter-spacing: -.04em;
+    }
+
+    .stat .label { color: var(--muted); font-size: .88rem; }
+
+    .progress {
+      height: 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.08);
+      overflow: hidden;
+      border: 1px solid var(--border);
+      margin-top: 12px;
+    }
+
+    .progress > div {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      transition: width .2s ease;
+    }
+
+    .miss-list {
+      display: grid;
+      gap: 10px;
+      max-height: 340px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .miss-item {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 12px;
+      background: rgba(255,255,255,.045);
+    }
+
+    .miss-item strong { display: block; margin-bottom: 4px; }
+    .miss-item span { color: var(--muted); font-size: .9rem; }
+
+    .results {
+      display: none;
+      margin-top: 4px;
+      border: 1px solid rgba(56,189,248,.35);
+      border-radius: 18px;
+      padding: 16px;
+      background: rgba(56,189,248,.09);
+    }
+
+    .results.show { display: block; }
+    .results h3 { margin-top: 0; }
+
+    .small-note {
+      color: var(--muted);
+      font-size: .9rem;
+      line-height: 1.45;
+    }
+
+    .kbd {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 7px;
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,.07);
+      font-size: .82rem;
+    }
+
+    footer {
+      max-width: 1180px;
+      margin: 0 auto;
+      padding: 10px 18px 32px;
+      color: var(--muted);
+      font-size: .88rem;
+      line-height: 1.45;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="logo">✈</div>
+      <div>
+        <h1>Corporate Jet ID Trainer</h1>
+        <p class="subtitle">Flashcard-style aircraft recognition for the ramp, pattern, and FBO couch patrol.</p>
+      </div>
+    </div>
+
+    <div class="top-actions">
+      <label class="pill" for="roundLength">Round length</label>
+      <select id="roundLength">
+        <option value="5">5 aircraft</option>
+        <option value="10" selected>10 aircraft</option>
+      </select>
+      <button id="restartBtn">Restart</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="card quiz-card">
+      <div class="status-bar">
+        <div class="pill" id="roundStatus">Aircraft 1 of 10</div>
+        <div class="pill" id="modeStatus">Multiple choice</div>
+        <div class="pill" id="scoreStatus">Score 0 / 0</div>
+      </div>
+
+      <div class="image-stage" id="imageStage">
+        <div class="fallback" id="fallbackSilhouette"></div>
+        <div class="image-label" id="imageCredit">Silhouette trainer image</div>
+      </div>
+
+      <div class="quiz-body">
+        <div class="question">
+          <div>
+            <h2>Which jet is this?</h2>
+            <div class="hint" id="questionHint">Look at the cabin windows, engine position, tail shape, winglets, and nose profile.</div>
+          </div>
+          <div class="pill" id="difficultyPill">Mixed difficulty</div>
+        </div>
+
+        <div class="options" id="options"></div>
+
+        <div class="feedback" id="feedback"></div>
+
+        <div class="next-row">
+          <button id="nextBtn" class="primary" disabled>Next aircraft</button>
+        </div>
+      </div>
+    </section>
+
+    <aside>
+      <section class="card side-section">
+        <h3>Round Stats</h3>
+        <div class="stat-grid">
+          <div class="stat"><span class="num" id="seenStat">0</span><span class="label">Seen</span></div>
+          <div class="stat"><span class="num" id="correctStat">0</span><span class="label">Correct</span></div>
+          <div class="stat"><span class="num" id="wrongStat">0</span><span class="label">Missed</span></div>
+          <div class="stat"><span class="num" id="percentStat">0%</span><span class="label">Accuracy</span></div>
+        </div>
+        <div class="progress"><div id="progressBar"></div></div>
+        <div class="results" id="resultsBox"></div>
+      </section>
+
+      <section class="card side-section">
+        <h3>Missed Aircraft Review</h3>
+        <div class="miss-list" id="missList">
+          <p class="small-note">The jets you miss will stack up here with quick recognition notes.</p>
+        </div>
+      </section>
+
+      <section class="card side-section">
+        <h3>How to add real photos</h3>
+        <p class="small-note">
+          Create an <span class="kbd">images</span> folder next to this file, drop in your photos, then set each aircraft's
+          <span class="kbd">image</span> value below to something like <span class="kbd">images/citation-x.jpg</span>.
+          Use your own photos or properly licensed images if you plan to share it publicly.
+        </p>
+      </section>
+    </aside>
+  </main>
+
+  <footer>
+    Tip: start with side profiles. Corporate jets get much easier when you train yourself to notice engine count/location, T-tail shape, winglets, cabin window pattern, nose length, and whether the fuselage looks “tube-like,” “fat,” or “long and sleek.”
+  </footer>
+
+  <script>
+    // =========================================================
+    // AIRCRAFT DATABASE
+    // Replace image: null with your own local image path or URL.
+    // Example: image: "images/gulfstream-g650.jpg"
+    // =========================================================
+    const AIRCRAFT = [
+      {
+        name: "Gulfstream G650 / G700 family",
+        maker: "Gulfstream",
+        difficulty: "Medium",
+        image: null,
+        silhouette: "gulfstreamLong",
+        features: [
+          "Very long, sleek fuselage with a pointed Gulfstream nose.",
+          "Large oval cabin windows that look taller and more rounded than many competitors.",
+          "Swept T-tail and rear-mounted engines; newer models often have elegant blended winglets.",
+          "Overall impression: long-range, low-slung, fast-looking business jet."
+        ]
+      },
+      {
+        name: "Bombardier Global 6000 / 7500 family",
+        maker: "Bombardier",
+        difficulty: "Medium",
+        image: null,
+        silhouette: "globalLong",
+        features: [
+          "Large ultra-long-range jet with a broad fuselage and substantial tail.",
+          "Cabin windows are more rectangular/oval and evenly spaced along a long cabin.",
+          "Winglets are prominent; Global 7500 has a very long fuselage and graceful wing.",
+          "Often looks a little bulkier than a Gulfstream from the side."
+        ]
+      },
+      {
+        name: "Dassault Falcon 7X / 8X",
+        maker: "Dassault",
+        difficulty: "Hard",
+        image: null,
+        silhouette: "falconTriJet",
+        features: [
+          "Three engines: two on the rear fuselage plus one centered at the tail base.",
+          "Distinct Falcon trijet layout is the giveaway from behind or side-rear angles.",
+          "Long, elegant fuselage with a refined, slightly fighter-like Dassault nose profile.",
+          "If you see three engines on a modern large business jet, think Falcon 7X/8X."
+        ]
+      },
+      {
+        name: "Dassault Falcon 900",
+        maker: "Dassault",
+        difficulty: "Hard",
+        image: null,
+        silhouette: "falconTriJetShort",
+        features: [
+          "Also a trijet, but shorter and chunkier than a Falcon 7X/8X.",
+          "Three rear engines are the big clue.",
+          "Shorter cabin and classic Falcon proportions.",
+          "Often has a more compact, purposeful stance than the longer 7X/8X."
+        ]
+      },
+      {
+        name: "Cessna Citation X / X+",
+        maker: "Cessna",
+        difficulty: "Medium",
+        image: null,
+        silhouette: "citationX",
+        features: [
+          "Very swept wings and tail; it looks fast even sitting still.",
+          "Long pointed nose and rear-mounted engines.",
+          "Large engine nacelles for a Citation, mounted high on the aft fuselage.",
+          "Usually has a sleek, dart-like profile compared with boxier Citations."
+        ]
+      },
+      {
+        name: "Cessna Citation CJ3 / CJ4 family",
+        maker: "Cessna",
+        difficulty: "Easy",
+        image: null,
+        silhouette: "citationCJ",
+        features: [
+          "Smaller light jet proportions with a relatively straight, simple fuselage.",
+          "T-tail, rear engines, and many small oval cabin windows.",
+          "CJ4 has a more modern swept wing and winglets; CJ3 is slightly smaller/cleaner.",
+          "Looks compact and practical, not as tall or bulky as a midsize jet."
+        ]
+      },
+      {
+        name: "Cessna Citation Latitude / Sovereign family",
+        maker: "Cessna",
+        difficulty: "Medium",
+        image: null,
+        silhouette: "citationMid",
+        features: [
+          "Midsize Citation with a taller cabin and beefier fuselage than the CJ series.",
+          "T-tail and rear engines remain classic Citation clues.",
+          "Latitude has a clean, modern cabin profile and moderate winglets.",
+          "Looks like the middle child between a CJ and a large long-range jet."
+        ]
+      },
+      {
+        name: "Embraer Phenom 300",
+        maker: "Embraer",
+        difficulty: "Easy",
+        image: null,
+        silhouette: "phenom300",
+        features: [
+          "Light jet with a sporty stance and distinctive swept winglets.",
+          "Pointed nose, rear engines, T-tail, and a compact cabin.",
+          "Usually has fewer cabin windows than larger midsize jets.",
+          "One of the most common ramp sightings in the light-jet world."
+        ]
+      },
+      {
+        name: "Embraer Praetor 500 / 600",
+        maker: "Embraer",
+        difficulty: "Medium",
+        image: null,
+        silhouette: "praetor",
+        features: [
+          "Midsize/super-midsize Embraer with large, dramatic winglets.",
+          "Strong ramp presence but not as huge as a Gulfstream or Global.",
+          "Clean nose, rear engines, T-tail, and a stretched cabin compared with Phenom.",
+          "Those big, swept winglets are often the fastest recognition clue."
+        ]
+      },
+      {
+        name: "HondaJet / HondaJet Elite",
+        maker: "Honda Aircraft",
+        difficulty: "Easy",
+        image: null,
+        silhouette: "hondajet",
+        features: [
+          "Engines are mounted over the wings, not on the rear fuselage.",
+          "This over-the-wing engine mount makes it one of the easiest jets to spot.",
+          "Small light jet with a rounded nose and short fuselage.",
+          "If the engines sit above the wings, think HondaJet first."
+        ]
+      },
+      {
+        name: "Pilatus PC-24",
+        maker: "Pilatus",
+        difficulty: "Easy",
+        image: null,
+        silhouette: "pc24",
+        features: [
+          "Unique business jet with a large cargo door on the left rear fuselage.",
+          "High-wing-ish visual impression compared with many low-slung jets, plus rough-field gear stance.",
+          "T-tail, rear engines, and Swiss-army-knife utility look.",
+          "If it looks like a jet that wants to land on a dirt strip, it may be a PC-24."
+        ]
+      },
+      {
+        name: "Learjet 35 / 45 / 75 family",
+        maker: "Bombardier Learjet",
+        difficulty: "Medium",
+        image: null,
+        silhouette: "learjet",
+        features: [
+          "Classic compact, needle-nosed business jet shape.",
+          "Tip tanks on older Learjets like the 35 are a huge giveaway.",
+          "Learjet 45/75 variants are sleeker with winglets and a slightly larger cabin.",
+          "Overall look: small, fast, sharp, and old-school cool."
+        ]
+      },
+      {
+        name: "Beechcraft Premier I / IA",
+        maker: "Beechcraft",
+        difficulty: "Hard",
+        image: null,
+        silhouette: "premier",
+        features: [
+          "Small jet with a noticeably large, round cabin cross-section for its size.",
+          "T-tail and rear engines, but the fuselage looks taller/fatter than many light jets.",
+          "Short nose and distinctive cabin shape are the big clues.",
+          "Often confused with small Citations until you notice the chunky cabin."
+        ]
+      },
+      {
+        name: "Beechcraft Hawker 800 / 900XP",
+        maker: "Beechcraft / Hawker",
+        difficulty: "Medium",
+        image: null,
+        silhouette: "hawker",
+        features: [
+          "Midsize jet with a rounded, stout fuselage and classic British-business-jet profile.",
+          "Low wing, rear engines, and T-tail.",
+          "Cabin windows are fairly large and evenly spaced.",
+          "Looks less sleek than a Citation X and less huge than a Gulfstream."
+        ]
+      },
+      {
+        name: "Challenger 300 / 350 / 3500",
+        maker: "Bombardier",
+        difficulty: "Medium",
+        image: null,
+        silhouette: "challenger350",
+        features: [
+          "Super-midsize jet with a wide, substantial cabin and strong stance.",
+          "Large winglets and rear engines; T-tail is broad and clean.",
+          "More muscular than a Citation Latitude, smaller than a Global.",
+          "Cabin looks roomy, fuselage looks thick, winglets are prominent."
+        ]
+      }
+    ];
+
+    const state = {
+      deck: [],
+      current: null,
+      index: 0,
+      answered: false,
+      correct: 0,
+      wrong: 0,
+      misses: [],
+      roundLength: 10
+    };
+
+    const el = {
+      roundLength: document.getElementById("roundLength"),
+      restartBtn: document.getElementById("restartBtn"),
+      roundStatus: document.getElementById("roundStatus"),
+      modeStatus: document.getElementById("modeStatus"),
+      scoreStatus: document.getElementById("scoreStatus"),
+      imageStage: document.getElementById("imageStage"),
+      fallbackSilhouette: document.getElementById("fallbackSilhouette"),
+      imageCredit: document.getElementById("imageCredit"),
+      questionHint: document.getElementById("questionHint"),
+      difficultyPill: document.getElementById("difficultyPill"),
+      options: document.getElementById("options"),
+      feedback: document.getElementById("feedback"),
+      nextBtn: document.getElementById("nextBtn"),
+      seenStat: document.getElementById("seenStat"),
+      correctStat: document.getElementById("correctStat"),
+      wrongStat: document.getElementById("wrongStat"),
+      percentStat: document.getElementById("percentStat"),
+      progressBar: document.getElementById("progressBar"),
+      missList: document.getElementById("missList"),
+      resultsBox: document.getElementById("resultsBox")
+    };
+
+    function shuffle(array) {
+      return [...array].sort(() => Math.random() - 0.5);
+    }
+
+    function startRound() {
+      state.roundLength = Number(el.roundLength.value);
+      state.deck = shuffle(AIRCRAFT).slice(0, state.roundLength);
+      state.index = 0;
+      state.correct = 0;
+      state.wrong = 0;
+      state.misses = [];
+      state.answered = false;
+      el.resultsBox.classList.remove("show");
+      el.resultsBox.innerHTML = "";
+      renderQuestion();
+      renderStats();
+      renderMisses();
+    }
+
+    function renderQuestion() {
+      state.current = state.deck[state.index];
+      state.answered = false;
+      el.nextBtn.disabled = true;
+      el.feedback.className = "feedback";
+      el.feedback.innerHTML = "";
+      el.difficultyPill.textContent = `${state.current.difficulty} · ${state.current.maker}`;
+      el.questionHint.textContent = "Look at the cabin windows, engine position, tail shape, winglets, and nose profile.";
+
+      renderImage(state.current);
+
+      const wrongOptions = shuffle(AIRCRAFT.filter(a => a.name !== state.current.name)).slice(0, 3);
+      const options = shuffle([state.current, ...wrongOptions]);
+      el.options.innerHTML = "";
+
+      options.forEach(option => {
+        const btn = document.createElement("button");
+        btn.className = "option";
+        btn.innerHTML = `<strong>${option.name}</strong><br><span style="color: var(--muted)">${option.maker}</span>`;
+        btn.addEventListener("click", () => chooseAnswer(option, btn));
+        el.options.appendChild(btn);
+      });
+
+      renderStats();
+    }
+
+    function renderImage(aircraft) {
+      el.imageStage.querySelectorAll("img").forEach(img => img.remove());
+      el.fallbackSilhouette.style.display = "block";
+      el.fallbackSilhouette.innerHTML = silhouetteSvg(aircraft.silhouette);
+      el.imageCredit.textContent = aircraft.image ? "Training photo" : "Silhouette trainer image";
+
+      if (aircraft.image) {
+        const img = document.createElement("img");
+        img.alt = aircraft.name;
+        img.src = aircraft.image;
+        img.onload = () => { el.fallbackSilhouette.style.display = "none"; };
+        img.onerror = () => {
+          el.fallbackSilhouette.style.display = "block";
+          el.imageCredit.textContent = "Photo failed; using silhouette";
+        };
+        el.imageStage.insertBefore(img, el.imageCredit);
+      }
+    }
+
+    function chooseAnswer(selected, clickedButton) {
+      if (state.answered) return;
+      state.answered = true;
+      const isCorrect = selected.name === state.current.name;
+
+      [...el.options.children].forEach(btn => {
+        btn.disabled = true;
+        if (btn.textContent.includes(state.current.name)) btn.classList.add("correct");
+      });
+
+      if (isCorrect) {
+        state.correct++;
+        clickedButton.classList.add("correct");
+        showFeedback(true, selected);
+      } else {
+        state.wrong++;
+        clickedButton.classList.add("wrong");
+        state.misses.push({
+          correct: state.current,
+          guessed: selected.name
+        });
+        showFeedback(false, selected);
+      }
+
+      el.nextBtn.disabled = false;
+      el.nextBtn.textContent = state.index + 1 >= state.roundLength ? "Show round results" : "Next aircraft";
+      renderStats();
+      renderMisses();
+    }
+
+    function showFeedback(isCorrect, selected) {
+      const a = state.current;
+      el.feedback.className = `feedback show ${isCorrect ? "good" : "bad"}`;
+      el.feedback.innerHTML = `
+        <h3>${isCorrect ? "Correct." : `Not quite. You picked ${selected.name}.`}</h3>
+        <div>The aircraft shown is <strong>${a.name}</strong>.</div>
+        <ul class="feature-list">
+          ${a.features.map(f => `<li>${f}</li>`).join("")}
+        </ul>
+      `;
+    }
+
+    function nextQuestion() {
+      if (!state.answered) return;
+      if (state.index + 1 >= state.roundLength) {
+        showResults();
+        return;
+      }
+      state.index++;
+      renderQuestion();
+    }
+
+    function showResults() {
+      const accuracy = state.correct + state.wrong === 0 ? 0 : Math.round((state.correct / (state.correct + state.wrong)) * 100);
+      const mood = accuracy >= 90 ? "Ramp boss level." : accuracy >= 70 ? "Pretty solid." : accuracy >= 50 ? "Good start — keep burning the silhouettes in." : "Totally normal early on. Corporate jets are slippery little lookalikes.";
+      el.resultsBox.classList.add("show");
+      el.resultsBox.innerHTML = `
+        <h3>Round Complete</h3>
+        <p><strong>${state.correct} correct out of ${state.roundLength}</strong> — ${accuracy}% accuracy.</p>
+        <p>${mood}</p>
+        <button class="primary" onclick="startRound()">Start another round</button>
+      `;
+      el.nextBtn.disabled = true;
+      el.nextBtn.textContent = "Round complete";
+    }
+
+    function renderStats() {
+      const seen = state.correct + state.wrong;
+      const percent = seen ? Math.round((state.correct / seen) * 100) : 0;
+      el.roundStatus.textContent = `Aircraft ${Math.min(state.index + 1, state.roundLength)} of ${state.roundLength}`;
+      el.scoreStatus.textContent = `Score ${state.correct} / ${seen}`;
+      el.seenStat.textContent = seen;
+      el.correctStat.textContent = state.correct;
+      el.wrongStat.textContent = state.wrong;
+      el.percentStat.textContent = `${percent}%`;
+      el.progressBar.style.width = `${(seen / state.roundLength) * 100}%`;
+    }
+
+    function renderMisses() {
+      if (!state.misses.length) {
+        el.missList.innerHTML = `<p class="small-note">The jets you miss will stack up here with quick recognition notes.</p>`;
+        return;
+      }
+
+      el.missList.innerHTML = state.misses.map(m => `
+        <div class="miss-item">
+          <strong>${m.correct.name}</strong>
+          <span>You picked: ${m.guessed}</span>
+          <ul class="feature-list">
+            ${m.correct.features.slice(0, 2).map(f => `<li>${f}</li>`).join("")}
+          </ul>
+        </div>
+      `).join("");
+    }
+
+    function silhouetteSvg(type) {
+      const common = `fill="rgba(238,244,255,.92)" stroke="rgba(255,255,255,.38)" stroke-width="3" stroke-linejoin="round"`;
+      const window = `fill="rgba(56,189,248,.55)"`;
+
+      const windows = (count, xStart, y, spacing) => Array.from({length: count}).map((_, i) =>
+        `<ellipse cx="${xStart + i * spacing}" cy="${y}" rx="7" ry="4" ${window}/>`
+      ).join("");
+
+      const enginesRear = `<ellipse cx="705" cy="232" rx="42" ry="22" ${common}/><ellipse cx="706" cy="277" rx="42" ry="22" ${common}/>`;
+      const tTail = `<polygon points="730,178 782,98 802,102 768,198" ${common}/><polygon points="760,105 850,84 858,102 762,126" ${common}/>`;
+      const winglets = `<polygon points="368,322 388,250 407,255 392,337" ${common}/><polygon points="478,318 500,247 518,254 492,334" ${common}/>`;
+
+      const shapes = {
+        gulfstreamLong: `
+          <svg viewBox="0 0 900 450" role="img" aria-label="long business jet silhouette">
+            <path d="M80 250 C150 198 280 185 560 202 C660 208 760 223 820 250 C745 279 615 288 270 282 C170 280 110 270 80 250Z" ${common}/>
+            ${windows(14, 210, 228, 32)} ${enginesRear} ${tTail}
+            <polygon points="390,280 545,372 505,386 260,281" ${common}/>${winglets}
+            <path d="M132 241 C104 222 82 228 62 247 C86 256 106 257 132 241Z" ${common}/>
+          </svg>`,
+        globalLong: `
+          <svg viewBox="0 0 900 450"><path d="M78 250 C150 205 260 188 585 204 C700 210 780 225 830 252 C766 285 610 295 225 285 C145 282 98 270 78 250Z" ${common}/>${windows(15, 205, 230, 30)}${enginesRear}${tTail}<polygon points="395,282 590,370 540,392 238,284" ${common}/><polygon points="585,367 612,305 634,313 602,389" ${common}/></svg>`,
+        falconTriJet: `
+          <svg viewBox="0 0 900 450"><path d="M96 252 C174 203 298 193 586 207 C690 212 760 230 812 256 C
