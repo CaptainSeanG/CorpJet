@@ -529,22 +529,8 @@
     </div>
 
     <div class="toolbar">
-      <select id="modeSelect" title="Mode">
-        <option value="quiz" selected>Quiz mode</option>
-        <option value="study">Study mode</option>
-      </select>
-      <select id="difficultySelect" title="Difficulty">
-        <option value="all" selected>All difficulty</option>
-        <option value="Easy">Easy</option>
-        <option value="Medium">Medium</option>
-        <option value="Hard">Hard</option>
-      </select>
-      <select id="roundLength" title="Round length">
-        <option value="5">5 aircraft</option>
-        <option value="10" selected>10 aircraft</option>
-        <option value="20">20 aircraft</option>
-      </select>
-      <button id="restartBtn">Restart</button>
+      <span class="pill">Adaptive mode</span>
+      <span class="pill">10 questions</span>
     </div>
   </header>
 
@@ -1020,15 +1006,11 @@
       wrong: 0,
       misses: [],
       roundLength: 10,
-      mode: "quiz",
-      difficulty: "all"
+      trainerStats: {}
     };
 
     const el = {
-      modeSelect: document.getElementById("modeSelect"),
-      difficultySelect: document.getElementById("difficultySelect"),
-      roundLength: document.getElementById("roundLength"),
-      restartBtn: document.getElementById("restartBtn"),
+
       roundStatus: document.getElementById("roundStatus"),
       familyStatus: document.getElementById("familyStatus"),
       scoreStatus: document.getElementById("scoreStatus"),
@@ -1064,19 +1046,69 @@
       return [...items].sort(() => Math.random() - 0.5);
     }
 
-    function getPool() {
-      if (state.difficulty === "all") return AIRCRAFT;
-      return AIRCRAFT.filter(a => a.difficulty === state.difficulty);
+    const QUESTION_COUNT = 10;
+    const STORAGE_KEY = "corporateJetTrainerStats";
+
+    function loadTrainerStats() {
+      try {
+        state.trainerStats = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+      } catch {
+        state.trainerStats = {};
+      }
+
+      AIRCRAFT.forEach(a => {
+        if (!state.trainerStats[a.name]) {
+          state.trainerStats[a.name] = { seen: 0, correct: 0, missed: 0, streak: 0 };
+        }
+      });
+    }
+
+    function saveTrainerStats() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.trainerStats));
+    }
+
+    function difficultyBase(aircraft) {
+      if (aircraft.difficulty === "Easy") return 0.8;
+      if (aircraft.difficulty === "Medium") return 1.2;
+      return 1.6;
+    }
+
+    function adaptiveWeight(aircraft) {
+      const s = state.trainerStats[aircraft.name] || { seen: 0, correct: 0, missed: 0, streak: 0 };
+      const missRate = s.seen ? s.missed / s.seen : 0.45;
+      const newAircraftBoost = s.seen === 0 ? 2.2 : 0;
+      const missBoost = missRate * 4 + Math.min(s.missed, 8) * 0.22;
+      const masteryDiscount = Math.min(s.streak, 6) * 0.18;
+      return Math.max(0.25, difficultyBase(aircraft) + newAircraftBoost + missBoost - masteryDiscount);
+    }
+
+    function buildAdaptiveDeck() {
+      const remaining = [...AIRCRAFT];
+      const deck = [];
+
+      while (deck.length < QUESTION_COUNT && remaining.length) {
+        const total = remaining.reduce((sum, a) => sum + adaptiveWeight(a), 0);
+        let pick = Math.random() * total;
+        let selectedIndex = 0;
+
+        for (let i = 0; i < remaining.length; i++) {
+          pick -= adaptiveWeight(remaining[i]);
+          if (pick <= 0) {
+            selectedIndex = i;
+            break;
+          }
+        }
+
+        deck.push(remaining.splice(selectedIndex, 1)[0]);
+      }
+
+      return deck;
     }
 
     function startRound() {
-      state.mode = el.modeSelect.value;
-      state.difficulty = el.difficultySelect.value;
-      state.roundLength = Number(el.roundLength.value);
-
-      const pool = getPool();
-      state.deck = shuffle(pool).slice(0, Math.min(state.roundLength, pool.length));
-      state.roundLength = state.deck.length;
+      loadTrainerStats();
+      state.roundLength = QUESTION_COUNT;
+      state.deck = buildAdaptiveDeck();
       state.index = 0;
       state.answered = false;
       state.correct = 0;
@@ -1092,7 +1124,7 @@
     function renderCard() {
       state.current = state.deck[state.index];
       state.answered = false;
-      el.nextBtn.disabled = state.mode === "quiz";
+      el.nextBtn.disabled = true;
       el.nextBtn.textContent = state.index + 1 >= state.roundLength ? "Show results" : "Next aircraft";
       el.feedback.className = "feedback";
       el.feedback.innerHTML = "";
@@ -1104,11 +1136,7 @@
 
       renderImage(state.current);
 
-      if (state.mode === "study") {
-        renderStudyMode();
-      } else {
-        renderQuizMode();
-      }
+      renderQuizMode();
 
       renderStats();
     }
@@ -1131,20 +1159,6 @@
         btn.addEventListener("click", () => answer(option, btn));
         el.options.appendChild(btn);
       });
-    }
-
-    function renderStudyMode() {
-      el.mainQuestion.textContent = state.current.name;
-      el.questionHint.textContent = `${state.current.maker} · ${state.current.family}`;
-      el.options.style.display = "none";
-      el.options.innerHTML = "";
-      el.studyCard.classList.add("show");
-      el.studyCard.innerHTML = `
-        <h3>Recognition Notes</h3>
-        <ul class="feature-list">
-          ${state.current.features.map(f => `<li>${f}</li>`).join("")}
-        </ul>
-      `;
     }
 
     function renderImage(aircraft) {
@@ -1174,7 +1188,7 @@
     }
 
     function answer(selected, clickedBtn) {
-      if (state.answered || state.mode !== "quiz") return;
+      if (state.answered) return;
       state.answered = true;
       const correct = selected.name === state.current.name;
 
@@ -1183,15 +1197,25 @@
         if (btn.textContent.includes(state.current.name)) btn.classList.add("correct");
       });
 
+      const currentStats = state.trainerStats[state.current.name] || { seen: 0, correct: 0, missed: 0, streak: 0 };
+      currentStats.seen++;
+
       if (correct) {
         state.correct++;
         clickedBtn.classList.add("correct");
+        currentStats.correct++;
+        currentStats.streak++;
       } else {
         state.wrong++;
         clickedBtn.classList.add("wrong");
+        currentStats.missed++;
+        currentStats.streak = 0;
         state.misses.push({ correct: state.current, guessed: selected.name });
         showWrongAnswerModal(selected.name, state.current.name);
       }
+
+      state.trainerStats[state.current.name] = currentStats;
+      saveTrainerStats();
 
       showFeedback(correct, selected);
       el.nextBtn.disabled = false;
@@ -1252,11 +1276,9 @@
     }
 
     function showResults() {
-      const seen = state.mode === "quiz" ? state.correct + state.wrong : state.roundLength;
+      const seen = state.correct + state.wrong;
       const accuracy = seen ? Math.round((state.correct / seen) * 100) : 0;
-      const comment = state.mode === "study"
-        ? "Study round complete. Now switch to Quiz mode and make your brain sweat a little."
-        : accuracy >= 90 ? "Ramp boss level. You are starting to see the matrix."
+      const comment = accuracy >= 90 ? "Ramp boss level. You are starting to see the matrix."
         : accuracy >= 75 ? "Solid work. The silhouettes are starting to stick."
         : accuracy >= 55 ? "Good start. Review the misses and run another round."
         : "Totally normal. Corporate jets are sneaky little clones until the details click.";
@@ -1264,19 +1286,19 @@
       el.resultsBox.classList.add("show");
       el.resultsBox.innerHTML = `
         <h3>Round Complete</h3>
-        <p><strong>${state.mode === "quiz" ? `${state.correct} correct out of ${seen}` : `${seen} aircraft studied`}</strong></p>
+        <p><strong>${state.correct} correct out of ${seen}</strong></p>
         <p>${comment}</p>
-        <button class="green" onclick="startRound()">Start another round</button>
+        <button class="green" onclick="startRound()">Start next adaptive round</button>
       `;
       el.nextBtn.disabled = true;
       el.nextBtn.textContent = "Round complete";
     }
 
     function renderStats() {
-      const seen = state.mode === "quiz" ? state.correct + state.wrong : state.index + 1;
-      const accuracy = state.mode === "quiz" && seen ? Math.round((state.correct / seen) * 100) : 0;
+      const seen = state.correct + state.wrong;
+      const accuracy = seen ? Math.round((state.correct / seen) * 100) : 0;
       el.roundStatus.textContent = `Aircraft ${Math.min(state.index + 1, state.roundLength)} of ${state.roundLength}`;
-      el.scoreStatus.textContent = state.mode === "quiz" ? `Score ${state.correct} / ${seen}` : "Study mode";
+      el.scoreStatus.textContent = `Score ${state.correct} / ${seen}`;
       el.seenStat.textContent = seen;
       el.correctStat.textContent = state.correct;
       el.wrongStat.textContent = state.wrong;
@@ -1347,16 +1369,13 @@
     }
 
     el.nextBtn.addEventListener("click", nextCard);
-    el.restartBtn.addEventListener("click", startRound);
-    el.modeSelect.addEventListener("change", startRound);
-    el.difficultySelect.addEventListener("change", startRound);
-    el.roundLength.addEventListener("change", startRound);
+
     el.promptBtn.addEventListener("click", () => el.promptBox.classList.toggle("show"));
     el.answerModal.addEventListener("click", hideWrongAnswerModal);
     el.answerModalCard.addEventListener("click", hideWrongAnswerModal);
 
     document.addEventListener("keydown", e => {
-      if (["1", "2", "3", "4"].includes(e.key) && state.mode === "quiz" && !state.answered) {
+      if (["1", "2", "3", "4"].includes(e.key) && !state.answered) {
         const btn = el.options.children[Number(e.key) - 1];
         if (btn) btn.click();
       }
