@@ -49,6 +49,18 @@
       cursor: pointer;
     }
 
+    select {
+      color: #07101f;
+      background: #eef6ff;
+      border-color: rgba(255,255,255,.45);
+      font-weight: 750;
+    }
+
+    select option {
+      color: #07101f;
+      background: #ffffff;
+    }
+
     button:hover, select:hover { background: rgba(255,255,255,.11); }
     button:disabled { opacity: .55; cursor: not-allowed; }
 
@@ -172,8 +184,9 @@
       position: relative;
       min-height: 280px;
       aspect-ratio: 16 / 9;
-      display: grid;
-      place-items: center;
+      display: flex;
+      align-items: center;
+      justify-content: center;
       overflow: hidden;
       background:
         linear-gradient(180deg, rgba(125,211,252,.18), rgba(15,23,42,.12)),
@@ -185,7 +198,9 @@
       width: 100%;
       height: 100%;
       display: block;
-      object-fit: cover;
+      object-fit: contain;
+      object-position: center center;
+      background: linear-gradient(180deg, #d6e9fc, #eef5fb 58%, #e5e5e5 58%, #e5e5e5 100%);
     }
 
     .silhouette {
@@ -195,21 +210,7 @@
     }
 
     .image-tag {
-      position: absolute;
-      left: 16px;
-      bottom: 16px;
-      display: flex;
-      gap: 8px;
-      flex-wrap: wrap;
-    }
-
-    .image-tag span {
-      padding: 7px 10px;
-      border-radius: 12px;
-      background: rgba(0,0,0,.48);
-      border: 1px solid rgba(255,255,255,.18);
-      color: rgba(255,255,255,.88);
-      font-size: .86rem;
+      display: none;
     }
 
     .quiz-body {
@@ -391,6 +392,78 @@
       font-size: .82rem;
     }
 
+    .answer-modal {
+      position: fixed;
+      inset: 0;
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 22px;
+      background: rgba(3,7,18,.62);
+      backdrop-filter: blur(8px);
+    }
+
+    .answer-modal.show {
+      display: flex;
+    }
+
+    .answer-modal-card {
+      width: min(560px, 94vw);
+      border-radius: 24px;
+      border: 1px solid rgba(255,255,255,.18);
+      background: linear-gradient(180deg, rgba(18,29,52,.98), rgba(10,18,34,.98));
+      box-shadow: 0 28px 80px rgba(0,0,0,.55);
+      padding: 22px;
+      cursor: pointer;
+    }
+
+    .answer-modal-card h3 {
+      margin: 0 0 14px;
+      color: #fecaca;
+      font-size: 1.35rem;
+      letter-spacing: -.025em;
+    }
+
+    .answer-compare {
+      display: grid;
+      gap: 10px;
+    }
+
+    .answer-row {
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 13px;
+      background: rgba(255,255,255,.055);
+    }
+
+    .answer-row span {
+      display: block;
+      color: var(--muted);
+      font-size: .88rem;
+      margin-bottom: 4px;
+    }
+
+    .answer-row strong {
+      font-size: 1.08rem;
+    }
+
+    .answer-row.correct-answer {
+      border-color: rgba(34,197,94,.62);
+      background: rgba(34,197,94,.12);
+    }
+
+    .answer-row.user-answer {
+      border-color: rgba(239,68,68,.62);
+      background: rgba(239,68,68,.12);
+    }
+
+    .modal-note {
+      margin: 14px 0 0;
+      color: var(--muted);
+      font-size: .9rem;
+    }
+
     .prompt-box {
       display: none;
       margin-top: 12px;
@@ -468,8 +541,7 @@
       <div class="image-wrap" id="imageWrap">
         <div class="silhouette" id="silhouette"></div>
         <div class="image-tag">
-          <span id="imageStatus">Silhouette fallback</span>
-          <span id="imageFile">images/example.jpg</span>
+
         </div>
       </div>
 
@@ -479,7 +551,7 @@
             <h2 id="mainQuestion">Which jet is this?</h2>
             <p class="hint" id="questionHint">Scan the nose, window line, winglets, engine location, and tail shape before answering.</p>
           </div>
-          <span class="pill" id="difficultyPill">Mixed</span>
+
         </div>
 
         <div class="study-card" id="studyCard"></div>
@@ -531,6 +603,23 @@
       </section>
     </aside>
   </main>
+
+  <div class="answer-modal" id="answerModal" aria-hidden="true">
+    <div class="answer-modal-card" id="answerModalCard" role="dialog" aria-modal="true">
+      <h3>Not quite — compare these:</h3>
+      <div class="answer-compare">
+        <div class="answer-row user-answer">
+          <span>You picked</span>
+          <strong id="modalPicked">—</strong>
+        </div>
+        <div class="answer-row correct-answer">
+          <span>Correct answer</span>
+          <strong id="modalCorrect">—</strong>
+        </div>
+      </div>
+      <p class="modal-note">Click this card to return to the review notes below.</p>
+    </div>
+  </div>
 
   <footer>
     Image note: for public sharing, use your own photos, properly licensed images, or carefully reviewed AI-generated images. AI is good for silhouette training, but verify features before relying on it for close model identification.
@@ -940,6 +1029,10 @@
       silhouette: document.getElementById("silhouette"),
       imageStatus: document.getElementById("imageStatus"),
       imageFile: document.getElementById("imageFile"),
+      answerModal: document.getElementById("answerModal"),
+      answerModalCard: document.getElementById("answerModalCard"),
+      modalPicked: document.getElementById("modalPicked"),
+      modalCorrect: document.getElementById("modalCorrect"),
       mainQuestion: document.getElementById("mainQuestion"),
       questionHint: document.getElementById("questionHint"),
       difficultyPill: document.getElementById("difficultyPill"),
@@ -998,8 +1091,7 @@
       el.promptBox.textContent = state.current.prompt;
 
       el.familyStatus.textContent = state.current.family;
-      el.difficultyPill.textContent = `${state.current.difficulty} · ${state.current.maker}`;
-      el.imageFile.textContent = state.current.image;
+      el.familyStatus.textContent = state.current.family;
 
       renderImage(state.current);
 
@@ -1050,10 +1142,10 @@
       el.imageWrap.querySelectorAll("img").forEach(img => img.remove());
       el.silhouette.style.display = "block";
       el.silhouette.innerHTML = silhouetteSvg(aircraft.silhouette);
-      el.imageStatus.textContent = "Loading image / silhouette fallback";
+      if (el.imageStatus) el.imageStatus.textContent = "Loading image / silhouette fallback";
 
       if (!aircraft.image) {
-        el.imageStatus.textContent = "Silhouette fallback";
+        if (el.imageStatus) el.imageStatus.textContent = "Silhouette fallback";
         return;
       }
 
@@ -1062,12 +1154,12 @@
       img.src = aircraft.image;
       img.onload = () => {
         el.silhouette.style.display = "none";
-        el.imageStatus.textContent = "Training image loaded";
+        if (el.imageStatus) el.imageStatus.textContent = "Training image loaded";
       };
       img.onerror = () => {
         img.remove();
         el.silhouette.style.display = "block";
-        el.imageStatus.textContent = "Image missing — using silhouette";
+        if (el.imageStatus) el.imageStatus.textContent = "Image missing — using silhouette";
       };
       el.imageWrap.insertBefore(img, el.imageWrap.firstChild);
     }
@@ -1089,12 +1181,25 @@
         state.wrong++;
         clickedBtn.classList.add("wrong");
         state.misses.push({ correct: state.current, guessed: selected.name });
+        showWrongAnswerModal(selected.name, state.current.name);
       }
 
       showFeedback(correct, selected);
       el.nextBtn.disabled = false;
       renderStats();
       renderMisses();
+    }
+
+    function showWrongAnswerModal(picked, correct) {
+      el.modalPicked.textContent = picked;
+      el.modalCorrect.textContent = correct;
+      el.answerModal.classList.add("show");
+      el.answerModal.setAttribute("aria-hidden", "false");
+    }
+
+    function hideWrongAnswerModal() {
+      el.answerModal.classList.remove("show");
+      el.answerModal.setAttribute("aria-hidden", "true");
     }
 
     function showFeedback(correct, selected) {
@@ -1219,12 +1324,15 @@
     el.difficultySelect.addEventListener("change", startRound);
     el.roundLength.addEventListener("change", startRound);
     el.promptBtn.addEventListener("click", () => el.promptBox.classList.toggle("show"));
+    el.answerModal.addEventListener("click", hideWrongAnswerModal);
+    el.answerModalCard.addEventListener("click", hideWrongAnswerModal);
 
     document.addEventListener("keydown", e => {
       if (["1", "2", "3", "4"].includes(e.key) && state.mode === "quiz" && !state.answered) {
         const btn = el.options.children[Number(e.key) - 1];
         if (btn) btn.click();
       }
+      if (e.key === "Escape") hideWrongAnswerModal();
       if (e.key === "Enter" && !el.nextBtn.disabled) nextCard();
     });
 
