@@ -83,7 +83,7 @@
     header {
       max-width: 1240px;
       margin: 0 auto;
-      padding: 14px 18px 6px;
+      padding: 8px 14px 4px;
       display: grid;
       grid-template-columns: 1fr auto;
       gap: 10px;
@@ -97,23 +97,23 @@
     .brand {
       display: flex;
       align-items: center;
-      gap: 15px;
+      gap: 10px;
     }
 
     .logo {
-      width: 46px;
-      height: 46px;
+      width: 38px;
+      height: 38px;
       border-radius: 20px;
       display: grid;
       place-items: center;
-      font-size: 24px;
+      font-size: 20px;
       background: linear-gradient(135deg, rgba(56,189,248,.95), rgba(34,197,94,.78));
       box-shadow: 0 16px 36px rgba(56,189,248,.18);
     }
 
     h1 {
       margin: 0;
-      font-size: clamp(1.65rem, 3.1vw, 2.85rem);
+      font-size: clamp(1.25rem, 2.4vw, 2.1rem);
       letter-spacing: -.045em;
       line-height: .98;
     }
@@ -134,7 +134,7 @@
     main {
       max-width: 1240px;
       margin: 0 auto;
-      padding: 10px 18px;
+      padding: 6px 14px;
       display: grid;
       grid-template-columns: minmax(0, 1fr) 360px;
       gap: 18px;
@@ -182,8 +182,8 @@
 
     .image-wrap {
       position: relative;
-      min-height: 210px;
-      aspect-ratio: 2.15 / 1;
+      min-height: 170px;
+      aspect-ratio: 2.45 / 1;
       display: flex;
       align-items: center;
       justify-content: center;
@@ -214,9 +214,9 @@
     }
 
     .quiz-body {
-      padding: 12px 16px 14px;
+      padding: 8px 12px 10px;
       display: grid;
-      gap: 10px;
+      gap: 7px;
     }
 
     .question-row {
@@ -232,7 +232,7 @@
 
     h2 {
       margin: 0;
-      font-size: clamp(1.35rem, 2.4vw, 2.2rem);
+      font-size: clamp(1.1rem, 2vw, 1.75rem);
       letter-spacing: -.035em;
     }
 
@@ -254,8 +254,8 @@
 
     .option {
       text-align: left;
-      min-height: 54px;
-      padding: 10px 12px;
+      min-height: 46px;
+      padding: 8px 10px;
       border-radius: 18px;
       border: 1px solid var(--border);
       background: rgba(255,255,255,.06);
@@ -288,7 +288,7 @@
       color: var(--soft);
     }
 
-    .feature-list li { margin: 3px 0; }
+    .feature-list li { margin: 2px 0; }
 
     .action-row {
       display: flex;
@@ -330,7 +330,7 @@
     .label { color: var(--muted); font-size: .88rem; }
 
     .progress {
-      height: 12px;
+      height: 8px;
       margin-top: 12px;
       border-radius: 999px;
       overflow: hidden;
@@ -348,7 +348,7 @@
     .review-list {
       display: grid;
       gap: 10px;
-      max-height: 245px;
+      max-height: 190px;
       overflow: auto;
       padding-right: 4px;
     }
@@ -511,7 +511,7 @@
     footer {
       max-width: 1240px;
       margin: 0 auto;
-      padding: 4px 18px 16px;
+      padding: 2px 14px 8px;
       color: var(--muted);
       font-size: .88rem;
       line-height: 1.45;
@@ -523,8 +523,8 @@
     <div class="brand">
       <div class="logo">✈</div>
       <div>
-        <h1>Corporate Jet ID Trainer V2</h1>
-        <p class="subtitle">A flashcard quiz for learning ramp silhouettes, cabin window patterns, engines, tails, and winglets.</p>
+        <h1>Corporate Jet ID Trainer</h1>
+        <p class="subtitle">A quiz for learning silhouettes, window patterns, engines, tails, and winglets.</p>
       </div>
     </div>
 
@@ -605,19 +605,6 @@
         <div class="review-list" id="reviewList">
           <p class="small-note">Missed jets will appear here with short recognition clues.</p>
         </div>
-      </section>
-
-      <section class="card side-section">
-        <h3>GitHub Image Setup</h3>
-        <p class="small-note">
-          Create an <span class="kbd">images</span> folder next to this file. Save generated or real photos using the filenames shown in the image tag.
-        </p>
-        <p class="small-note">
-          Example:<br>
-          <span class="kbd">index.html</span><br>
-          <span class="kbd">images/gulfstream-g650.jpg</span><br>
-          <span class="kbd">images/citation-x.jpg</span>
-        </p>
       </section>
     </aside>
   </main>
